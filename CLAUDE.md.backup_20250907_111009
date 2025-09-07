@@ -1,0 +1,60 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project Overview
+
+This is a Galvanik Varianten-System (Galvanization Variants System) project that manages the data model and processing parameters for galvanization processes. The system handles article codes, processing programs, and detailed parameter configurations for different galvanization facilities (G2, G3, G4, G5, and A60 plants).
+
+## Database Architecture
+
+The system is built around three main database tables:
+
+1. **ARTIKEL** (8,386 articles)
+   - Primary key: `artikel_inr`
+   - Critical fields: `g_code` and `a_code` contain encoded process sequences
+   - Code format: Plant + VB (pre-treatment) + HB (main treatment) + PAS (passivation) + NB (post-treatment) + XX (additional)
+
+2. **VFAHEAD** (234 programs)
+   - Primary key: `vfahead_inr`
+   - Contains program definitions for each process step
+   - Links to articles via decoded `bmdvariante` and `type` fields
+   - `anlage_codes[]` array field for plant associations
+
+3. **VFALINE** (9,908 parameters)
+   - Foreign key: `vfahead_inr` links to VFAHEAD
+   - Stores parameter groups and values for each program
+   - Values stored in either `daten_char` (text) or `daten_dec` (numeric)
+
+## Key Concepts
+
+### Code Decoding Process
+Articles contain encoded process sequences in `g_code` (for G plants) and `a_code` (for A60 plant). These codes are decoded into individual process steps which map to VFAHEAD programs via:
+- Position extraction (VB/HB/PAS/NB)
+- Type mapping (VOR/HAUPT/PASSIV/NACHBEHAND)
+- Plant filtering via `anlage_codes[]`
+
+### Dual Process Support
+The A60 plant supports dual processes (e.g., HB=60 or HB=62) which can execute two main treatment programs simultaneously.
+
+## Important Relationships
+
+- Articles link to programs via decoded code segments
+- Each VFAHEAD program has multiple VFALINE parameter entries (1:N relationship)
+- Programs are filtered by plant using the `anlage_codes[]` array field
+- Status field 'A' indicates active programs
+
+## Common Query Patterns
+
+When querying for article processes:
+1. Decode the article's g_code or a_code into segments
+2. Find matching VFAHEAD entries by bmdvariante, type, and plant
+3. Retrieve associated VFALINE parameters for each program
+4. Combine results to build complete process sequence
+
+## Data Volumes
+
+- ~7,000 articles with G-codes
+- ~3,500 articles with A-codes  
+- ~2,100 articles with both codes (dual capability)
+- Average 40-50 parameters per program

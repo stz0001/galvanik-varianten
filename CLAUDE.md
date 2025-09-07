@@ -62,6 +62,19 @@ Example:   G4    10    60    23    10    00
            └──────────────────────────────── Plant (G4)
 ```
 
+## Variant Display Format
+
+Variants are displayed in the format: **[Plant][Type][Number]**
+- **Type abbreviations:**
+  - Vor = Vorbehandlung (Pre-treatment)
+  - Haupt = Hauptbehandlung (Main treatment)
+  - Pass = Passivierung (Passivation)
+  - Nach = Nachbehandlung (Post-treatment)
+- **Examples:**
+  - G4Vor10 = Plant G4, Pre-treatment, Variant 10
+  - G4Haupt60 = Plant G4, Main treatment, Variant 60
+  - A6Pass23 = Plant A60, Passivation, Variant 23
+
 ## Important Relationships
 
 1. **Code Decoding Process:**
