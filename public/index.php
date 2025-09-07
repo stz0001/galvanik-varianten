@@ -69,83 +69,181 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Variantenexplorer</title>
-    <link rel="stylesheet" href="style.css">
+    <title><?= APP_NAME ?> - Übersicht</title>
+    <link rel="stylesheet" href="style.css?v=2">
 </head>
 <body>
+    <header>
+        <div class="container">
+            <h1><?= APP_NAME ?></h1>
+            <p>Verwaltung und Analyse von Galvanik-Varianten</p>
+        </div>
+    </header>
+    
     <div class="container">
-        <h1>Variantenexplorer</h1>
+        <?php renderNavigation('index.php'); ?>
         
-        <div class="stats">
-            <?php foreach ($stats as $stat): ?>
-                <div class="stat-card">
-                    <h3><?php echo htmlspecialchars($stat['anlage'] === 'A6' ? 'A60' : $stat['anlage']); ?></h3>
-                    <p><?php echo $stat['code_count']; ?> Codes</p>
-                    <p><?php echo number_format($stat['artikel_total'], 0, ',', '.'); ?> Artikel</p>
+        <!-- STATISTIK-CARD -->
+        <div class="card">
+            <div class="card-header">Anlagen-Statistik</div>
+            <div class="card-body">
+                <div class="stats">
+                    <?php foreach ($stats as $stat): ?>
+                        <?php 
+                        $anlageClass = 'anlage-' . strtolower($stat['anlage']);
+                        $displayName = $stat['anlage'] === 'A6' ? 'A60' : $stat['anlage'];
+                        ?>
+                        <div class="stat-card">
+                            <span class="badge <?= h($anlageClass) ?>"><?= h($displayName) ?></span>
+                            <p><?= h($stat['code_count']) ?> Codes</p>
+                            <p><?= number_format($stat['artikel_total'], 0, ',', '.') ?> Artikel</p>
+                        </div>
+                    <?php endforeach; ?>
                 </div>
-            <?php endforeach; ?>
+            </div>
         </div>
         
-        <div class="controls">
-            <form method="GET" action="">
-                <select name="anlage" onchange="this.form.submit()">
-                    <option value="alle" <?php echo $selected_anlage === 'alle' ? 'selected' : ''; ?>>Alle Anlagen</option>
-                    <option value="G2" <?php echo $selected_anlage === 'G2' ? 'selected' : ''; ?>>G2</option>
-                    <option value="G3" <?php echo $selected_anlage === 'G3' ? 'selected' : ''; ?>>G3</option>
-                    <option value="G4" <?php echo $selected_anlage === 'G4' ? 'selected' : ''; ?>>G4</option>
-                    <option value="G5" <?php echo $selected_anlage === 'G5' ? 'selected' : ''; ?>>G5</option>
-                    <option value="A6" <?php echo $selected_anlage === 'A6' ? 'selected' : ''; ?>>A60</option>
-                </select>
-                
-                <input type="text" name="search" placeholder="Suche..." value="<?php echo htmlspecialchars($search); ?>">
-                <button type="submit">Suchen</button>
-                
-                <a href="?anlage=<?php echo $selected_anlage; ?>&search=<?php echo urlencode($search); ?>&export=csv" class="btn-export">CSV Export</a>
-            </form>
+        <!-- FILTER-CARD -->
+        <div class="card">
+            <div class="card-header">Filter & Suche</div>
+            <div class="card-body">
+                <form method="GET" action="">
+                    <div class="filter-row">
+                        <select name="anlage" onchange="this.form.submit()">
+                            <option value="alle" <?= $selected_anlage === 'alle' ? 'selected' : '' ?>>Alle Anlagen</option>
+                            <option value="G2" <?= $selected_anlage === 'G2' ? 'selected' : '' ?>>G2</option>
+                            <option value="G3" <?= $selected_anlage === 'G3' ? 'selected' : '' ?>>G3</option>
+                            <option value="G4" <?= $selected_anlage === 'G4' ? 'selected' : '' ?>>G4</option>
+                            <option value="G5" <?= $selected_anlage === 'G5' ? 'selected' : '' ?>>G5</option>
+                            <option value="A6" <?= $selected_anlage === 'A6' ? 'selected' : '' ?>>A60</option>
+                        </select>
+                        
+                        <input type="text" name="search" value="<?= h($search) ?>" 
+                               placeholder="Code oder Bezeichnung suchen...">
+                        
+                        <div class="button-group">
+                            <button type="submit" class="btn btn-primary">Filtern</button>
+                            <a href="index.php" class="btn btn-secondary">Reset</a>
+                            <a href="?anlage=<?= h($selected_anlage) ?>&search=<?= urlencode($search) ?>&export=csv" 
+                               class="btn btn-success">CSV Export</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
         </div>
         
-        <table class="codes-table">
-            <thead>
-                <tr>
-                    <th>Anlage</th>
-                    <th>Code</th>
-                    <th>Vorbehandlung</th>
-                    <th>Hauptbehandlung</th>
-                    <th>Passivierung</th>
-                    <th>Nachbehandlung</th>
-                    <th>Artikel</th>
-                </tr>
-            </thead>
-            <tbody>
-                <?php foreach ($codes as $row): ?>
-                <tr>
-                    <td><?php echo htmlspecialchars($row['anlage'] === 'A6' ? 'A60' : $row['anlage']); ?></td>
-                    <td class="code"><a href="details.php?code=<?php echo urlencode($row['code']); ?>" style="color: inherit; text-decoration: none;"><?php echo htmlspecialchars($row['code']); ?></a></td>
-                    <td>
-                        <span class="value"><?php echo htmlspecialchars($row['anlage'] === 'A6' ? 'A6' : $row['anlage']); ?>Vor<?php echo htmlspecialchars($row['vb']); ?></span>
-                        <span class="text"><?php echo htmlspecialchars($row['vb_beschreibung'] ?: $row['vb_text']); ?></span>
-                    </td>
-                    <td>
-                        <span class="value"><?php echo htmlspecialchars($row['anlage'] === 'A6' ? 'A6' : $row['anlage']); ?>Haupt<?php echo htmlspecialchars($row['hb']); ?></span>
-                        <span class="text"><?php echo htmlspecialchars($row['hb_beschreibung'] ?: $row['hb_text']); ?></span>
-                    </td>
-                    <td>
-                        <span class="value"><?php echo htmlspecialchars($row['anlage'] === 'A6' ? 'A6' : $row['anlage']); ?>Pass<?php echo htmlspecialchars($row['pas']); ?></span>
-                        <span class="text"><?php echo htmlspecialchars($row['pas_beschreibung'] ?: $row['pas_text']); ?></span>
-                    </td>
-                    <td>
-                        <span class="value"><?php echo htmlspecialchars($row['anlage'] === 'A6' ? 'A6' : $row['anlage']); ?>Nach<?php echo htmlspecialchars($row['nb']); ?></span>
-                        <span class="text"><?php echo htmlspecialchars($row['nb_beschreibung'] ?: $row['nb_text']); ?></span>
-                    </td>
-                    <td class="count"><?php echo number_format($row['artikel_count'], 0, ',', '.'); ?></td>
-                </tr>
-                <?php endforeach; ?>
-            </tbody>
-        </table>
+        <!-- HAUPT-CARD mit Daten -->
+        <div class="card">
+            <div class="card-header">
+                Varianten-Codes (<?= count($codes) ?> Einträge)
+            </div>
+            <div class="card-body">
+                <?php if (empty($codes)): ?>
+                    <p class="no-results">Keine Codes gefunden.</p>
+                <?php else: ?>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th width="60">Anlage</th>
+                                <th width="140">Code</th>
+                                <th width="80">Artikel</th>
+                                <th width="20%">Vorbehandlung</th>
+                                <th width="20%">Hauptbehandlung</th>
+                                <th width="20%">Passivierung</th>
+                                <th width="20%">Nachbehandlung</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($codes as $row): ?>
+                            <?php 
+                            $anlageDisplay = $row['anlage'] === 'A6' ? 'A60' : $row['anlage'];
+                            $anlagePrefix = $row['anlage'] === 'A6' ? 'A6' : $row['anlage'];
+                            $anlageClass = getAnlageClass($row['anlage']);
+                            ?>
+                            <tr data-anlage="<?= h($row['anlage']) ?>">
+                                <td>
+                                    <span class="badge <?= h($anlageClass) ?>">
+                                        <?= h($anlageDisplay) ?>
+                                    </span>
+                                </td>
+                                <td class="code <?= h($anlageClass) ?>">
+                                    <a href="details.php?code=<?= urlencode($row['code']) ?>">
+                                        <?= h($row['code']) ?>
+                                    </a>
+                                </td>
+                                <td class="count"><?= number_format($row['artikel_count'], 0, ',', '.') ?></td>
+                                <td>
+                                    <span class="value"><?= h($anlagePrefix) ?>Vor<?= h($row['vb']) ?></span>
+                                    <?php 
+                                    $vb_desc = $row['vb_beschreibung'] ?: $row['vb_text'];
+                                    if ($vb_desc && strpos($vb_desc, '|') !== false):
+                                        $variants = explode('|', $vb_desc);
+                                        foreach ($variants as $variant): ?>
+                                            <span class="text"><?= h(trim($variant)) ?></span>
+                                        <?php endforeach;
+                                    else: ?>
+                                        <span class="text"><?= h($vb_desc) ?></span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <span class="value"><?= h($anlagePrefix) ?>Haupt<?= h($row['hb']) ?></span>
+                                    <?php 
+                                    $hb_desc = $row['hb_beschreibung'] ?: $row['hb_text'];
+                                    if ($hb_desc && strpos($hb_desc, '|') !== false):
+                                        $variants = explode('|', $hb_desc);
+                                        foreach ($variants as $variant): ?>
+                                            <span class="text"><?= h(trim($variant)) ?></span>
+                                        <?php endforeach;
+                                    else: ?>
+                                        <span class="text"><?= h($hb_desc) ?></span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <span class="value"><?= h($anlagePrefix) ?>Pass<?= h($row['pas']) ?></span>
+                                    <?php 
+                                    $pas_desc = $row['pas_beschreibung'] ?: $row['pas_text'];
+                                    if ($pas_desc && strpos($pas_desc, '|') !== false):
+                                        $variants = explode('|', $pas_desc);
+                                        foreach ($variants as $variant): ?>
+                                            <span class="text"><?= h(trim($variant)) ?></span>
+                                        <?php endforeach;
+                                    else: ?>
+                                        <span class="text"><?= h($pas_desc) ?></span>
+                                    <?php endif; ?>
+                                </td>
+                                <td>
+                                    <span class="value"><?= h($anlagePrefix) ?>Nach<?= h($row['nb']) ?></span>
+                                    <?php 
+                                    $nb_desc = $row['nb_beschreibung'] ?: $row['nb_text'];
+                                    if ($nb_desc && strpos($nb_desc, '|') !== false):
+                                        $variants = explode('|', $nb_desc);
+                                        foreach ($variants as $variant): ?>
+                                            <span class="text"><?= h(trim($variant)) ?></span>
+                                        <?php endforeach;
+                                    else: ?>
+                                        <span class="text"><?= h($nb_desc) ?></span>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                <?php endif; ?>
+            </div>
+        </div>
         
-        <?php if (empty($codes)): ?>
-            <p class="no-results">Keine Codes gefunden.</p>
-        <?php endif; ?>
+        <!-- INFO-CARD -->
+        <div class="card">
+            <div class="card-header">Hinweise</div>
+            <div class="card-body">
+                <ul style="margin-left: 20px">
+                    <li>Die Codes setzen sich aus 12 Ziffern zusammen: Anlage + VB + HB + PAS + NB + XX</li>
+                    <li>Klicken Sie auf einen Code, um die detaillierten Parameter anzuzeigen</li>
+                    <li>Die Farben entsprechen den jeweiligen Anlagen (G2=Grün, G3=Blau, G4=Orange, G5=Lila, A60=Rot)</li>
+                    <li>Verwenden Sie die Filter, um die Anzeige einzuschränken</li>
+                </ul>
+            </div>
+        </div>
     </div>
 </body>
 </html>
