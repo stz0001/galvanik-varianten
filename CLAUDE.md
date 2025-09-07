@@ -133,3 +133,54 @@ AND vfahead_type = 'HAUPT';
 - The system maintains strict separation between PB_Prod and MV_Prod sources
 - All field names in VFAHEAD/VFALINE tables have prefixes (vfahead_, vfaline_)
 - Description fields can contain multiple variants separated by "|"
+
+## Git & GitHub Integration
+
+### Repository Information
+- **GitHub URL**: https://github.com/stz0001/galvanik-varianten
+- **Repository Type**: Public
+- **Local Path**: `/var/www/varianten/`
+
+### CORRECT Git Workflow for Claude Code
+
+#### 1. Make local changes and commit
+```bash
+git add -A
+git status  # Always check what will be committed
+git commit -m "feat: Description of changes"
+```
+
+#### 2. Push to GitHub (WORKING METHOD)
+```bash
+# The SSH key has limited permissions, use token instead:
+git push https://`gh auth token`@github.com/stz0001/galvanik-varianten.git main
+```
+
+#### Alternative if above fails:
+```bash
+# Set HTTPS remote
+git remote set-url origin https://github.com/stz0001/galvanik-varianten.git
+
+# Push with gh CLI token
+git push https://`gh auth token`@github.com/stz0001/galvanik-varianten.git main
+```
+
+### Common Git Commands
+```bash
+git status                    # Check current status
+git log --oneline -5          # Show last 5 commits
+git diff                      # Show unstaged changes
+git diff --staged             # Show staged changes
+```
+
+### Important Notes
+- **DO NOT** use regular `git push origin main` - it will fail with "Permission denied to deploy key"
+- **DO NOT** try SSH push - the deploy key has read-only access
+- **ALWAYS** use the gh CLI token method shown above
+- The gh CLI is already authenticated (check with `gh auth status`)
+
+### When User Says "mach mir ein git, lokal und github"
+1. Stage all changes: `git add -A`
+2. Create commit with descriptive message
+3. Push using: `git push https://`gh auth token`@github.com/stz0001/galvanik-varianten.git main`
+4. Confirm success to user
